@@ -3,6 +3,26 @@
 #set -x
 set -eu
 
+function go_to_basedir() {
+    cd "$(dirs -l -0)" && dirs -c
+}
+
+function backup_if_exists() {
+    FILE=$1
+    if [[ -f $FILE ]]; then
+        mv "$FILE" "$FILE.bak"
+        echo "Backuppato $FILE in $FILE.bak"
+    fi
+}
+
+function rm_folder_if_exists() {
+    FOLDER=$1
+    if [[ -d $FOLDER ]]; then
+        rm -rf "$FOLDER"
+        echo "Rimossa la cartella $FOLDER"
+    fi
+}
+
 echo "Aggiorno il sistema..."
 sudo apt update && sudo apt upgrade -y
 
@@ -57,9 +77,7 @@ rustup update stable
 echo "Installo Alacritty..."
 mkdir -p ~/myprograms
 pushd ~/myprograms
-if [[ -d alacritty ]]; then
-    rm -rf alacritty
-fi
+rm_folder_if_exists alacritty
 git clone https://github.com/alacritty/alacritty.git
 pushd alacritty
 
@@ -90,239 +108,44 @@ scdoc <extra/man/alacritty-msg.1.scd | gzip -c | sudo tee /usr/local/share/man/m
 scdoc <extra/man/alacritty.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty.5.gz >/dev/null
 scdoc <extra/man/alacritty-bindings.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty-bindings.5.gz >/dev/null
 
-cd "$(dirs -l -0)" && dirs -c
+go_to_basedir
 
 echo "Installo i temi di Alacritty..."
-if [[ -d ~/.config/alacritty/themes ]]; then
-    rm -rf ~/.config/alacritty/themes
-fi
+rm_folder_if_exists ~/.config/alacritty/themes
 mkdir -p ~/.config/alacritty/themes
 git clone https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes
 
 echo "Configuro Alacritty..."
-if [[ -f ~/.config/alacritty/alacritty.toml ]]; then
-    mv ~/.config/alacritty/alacritty.toml ~/.config/alacritty/alacritty.toml.bak
-fi
-
-cat <<EOF >~/.config/alacritty/alacritty.toml
-import = ["~/.config/alacritty/themes/themes/argonaut.toml"]
-
-[font.bold]
-family = "FiraCode Nerd Font"
-
-[font.bold_italic]
-family = "FiraCode Nerd Font"
-
-[font.italic]
-family = "FiraCode Nerd Font"
-
-[font.normal]
-family = "FiraCode Nerd Font"
-
-[window.dimensions]
-columns = 125
-lines = 35
-EOF
+backup_if_exists ~/.config/alacritty/alacritty.toml
+cp ./alacritty.toml ~/.config/alacritty/alacritty.toml
 
 echo "Configuro fish..."
 fish -c 'mkdir -p $fish_complete_path[1]; cp extra/completions/alacritty.fish $fish_complete_path[1]/alacritty.fish'
-mkdir -p ~/.config/fish
-
-cat <<EOF >>~/.config/fish/config.fish
-
-# Changing "ls" to "eza"
-alias ls='eza -al --color=always --group-directories-first --icons'
-alias la='eza -a --color=always --group-directories-first --icons'
-alias ll='eza -l --color=always --group-directories-first --icons'
-alias lt='eza -aT --color=always --group-directories-first --icons'
-alias l.='eza -a | grep -E "^\."'
-EOF
 
 echo "Installo gli shell color script..."
 pushd ~/myprograms
-if [[ -d shell-color-scripts ]]; then
-    rm -rf shell-color-scripts
-fi
+rm_folder_if_exists shell-color-scripts
 git clone https://gitlab.com/dwt1/shell-color-scripts.git
 pushd shell-color-scripts
 sudo make install
+sudo cp completions/colorscript.fish /usr/share/fish/vendor_completions.d # optional for fish shell completion
 
-# optional for fish shell completion
-sudo cp completions/colorscript.fish /usr/share/fish/vendor_completions.d
-
-cd "$(dirs -l -0)" && dirs -c
+go_to_basedir
 
 mkdir -p ~/.config/fish/functions
-cat <<EOF >~/.config/fish/functions/fish_greeting.fish
-function fish_greeting
-    if set -q fish_private_mode
-        colorscript random
-        echo "fish is running in private mode, history will not be persisted."
-    else
-        colorscript random
-    end
-end
-EOF
+backup_if_exists ~/.config/fish/functions/fish_greeting.fish
+cp ./fish_greeting.fish ~/.config/fish/functions/fish_greeting.fish
+cp ./light-dark.txt ~/.config/alacritty/light-dark.txt
+cp ./alacritty-dark.fish ./alacritty-light.fish ~/.config/fish/functions
 
 echo "Installo Starship..."
 curl -sS https://starship.rs/install.sh | sh -s -- -y
+backup_if_exists ~/.config/starship.toml
+cp ./starship.toml ~/.config/starship.toml
 
-cat <<EOF >>~/.config/fish/config.fish
-
-# Starship prompt
-starship init fish | source
-EOF
-
-cat <<'EOF' >~/.config/starship.toml
-## FIRST LINE/ROW: Info & Status
-# First param ─┌
-[username]
-format = " [╭─$user]($style)@"
-style_user = "bold green"
-style_root = "bold yellow"
-show_always = true
-
-# Second param
-[hostname]
-format = "[$hostname]($style) in "
-style = "bold dimmed green"
-trim_at = "-"
-ssh_only = false
-disabled = false
-
-# Third param
-[directory]
-style = "purple"
-truncation_length = 0
-truncate_to_repo = true
-truncation_symbol = "repo: "
-
-# Before all the version info (python, nodejs, php, etc.)
-[git_status]
-style = "white"
-ahead = "⇡${count}"
-diverged = "⇕⇡${ahead_count}⇣${behind_count}"
-behind = "⇣${count}"
-deleted = "x"
-
-# Last param in the first line/row
-[cmd_duration]
-min_time = 1
-format = "took [$duration]($style)"
-disabled = false
-
-
-## SECOND LINE/ROW: Prompt
-# Somethere at the beginning
-[battery]
-full_symbol = " "
-charging_symbol = " "
-discharging_symbol = " "
-disabled = true
-
-[[battery.display]]  # "bold red" style when capacity is between 0% and 10%
-threshold = 15
-style = "bold red"
-disabled = true
-
-[[battery.display]]  # "bold yellow" style when capacity is between 10% and 30%
-threshold = 50
-style = "bold yellow"
-disabled = true
-
-[[battery.display]]  # "bold green" style when capacity is between 10% and 30%
-threshold = 80
-style = "bold green"
-disabled = true
-
-# Prompt: optional param 1
-[time]
-format = " 🕙 $time($style)\n"
-time_format = "%T"
-style = "bright-white"
-disabled = true
-
-# Prompt: param 2 └─
-[character]
-success_symbol = " [╰─λ](bold green)"
-error_symbol = " [×](bold red)"
-#use_symbol_for_status = true
-
-# SYMBOLS
-[status]
-symbol = "🔴"
-format = '[\[$symbol$status_common_meaning$status_signal_name$status_maybe_int\]]($style)'
-map_symbol = true
-disabled = false
-
-[aws]
-symbol = " "
-
-[conda]
-symbol = " "
-
-[dart]
-symbol = " "
-
-#[docker]
-#symbol = " "
-
-[elixir]
-symbol = " "
-
-[elm]
-symbol = " "
-
-[git_branch]
-symbol = " "
-
-[golang]
-symbol = " "
-
-[haskell]
-symbol = " "
-
-[hg_branch]
-symbol = " "
-
-[java]
-symbol = " "
-
-[julia]
-symbol = " "
-
-[nim]
-symbol = " "
-
-[nix_shell]
-symbol = " "
-
-[nodejs]
-symbol = " "
-
-[package]
-symbol = " "
-
-[perl]
-symbol = " "
-
-[php]
-symbol = " "
-
-[python]
-symbol = " "
-
-[ruby]
-symbol = " "
-
-[rust]
-symbol = " "
-
-[swift]
-symbol = "ﯣ "
-EOF
-
-cd "$(dirs -l -0)" && dirs -c
+mkdir -p ~/.config/fish
+backup_if_exists ~/.config/fish/config.fish
+cp ./config.fish ~/.config/fish/config.fish
 
 echo "Finito! Puoi provare il nuovo terminale!"
 alacritty -e fish

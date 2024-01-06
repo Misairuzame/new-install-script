@@ -1,0 +1,2 @@
+LIGHT=github_light
+DARK=argonaut
