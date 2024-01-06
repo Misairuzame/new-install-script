@@ -7,7 +7,7 @@ echo "Aggiorno il sistema..."
 sudo apt update && sudo apt upgrade -y
 
 echo "Installo alcuni pacchetti..."
-sudo apt install -y python-is-python3 python3-venv htop btop tmux fish gpg neofetch wget curl
+sudo apt install -y python-is-python3 python3-pip python3-venv htop btop tmux fish gpg neofetch wget curl
 
 echo "Installo alcuni font..."
 mkdir tmp_font
@@ -24,13 +24,12 @@ wget -q --show-progress "$font_baseurl/Mononoki.tar.xz"
 wget -q --show-progress "$font_baseurl/RobotoMono.tar.xz"
 wget -q --show-progress "$font_baseurl/UbuntuMono.tar.xz"
 
-for font in *;
-do
-    tar xJf $font
+for font in *; do
+    tar xJf "$font"
 done
 
 mkdir -p ~/.local/share/fonts
-mv *.ttf ~/.local/share/fonts
+mv "*.ttf" "*.otf" ~/.local/share/fonts
 
 popd
 
@@ -58,8 +57,7 @@ rustup update stable
 echo "Installo Alacritty..."
 mkdir -p ~/myprograms
 pushd ~/myprograms
-if [[ -d alacritty ]];
-then
+if [[ -d alacritty ]]; then
     rm -rf alacritty
 fi
 git clone https://github.com/alacritty/alacritty.git
@@ -67,19 +65,16 @@ pushd alacritty
 
 sudo apt install -y cmake pkg-config libfreetype6-dev libfontconfig1-dev libxcb-xfixes0-dev libxkbcommon-dev python3 gzip scdoc
 
-if [[ $(echo $XDG_SESSION_TYPE) == "x11" ]];
-then
+if [[ $XDG_SESSION_TYPE == "x11" ]]; then
     cargo build --release --no-default-features --features=x11
-elif [[ $(echo $XDG_SESSION_TYPE) == "wayland" ]];
-then
+elif [[ $XDG_SESSION_TYPE == "wayland" ]]; then
     cargo build --release --no-default-features --features=wayland
 else
     echo "Display manager non riconosciuto (non è X11 o Wayland), installo tutte le feature"
     cargo build --release
 fi
 
-if [[ ! $(infocmp alacritty) ]];
-then
+if [[ ! $(infocmp alacritty) ]]; then
     sudo tic -xe alacritty,alacritty-direct extra/alacritty.info
 fi
 
@@ -90,28 +85,26 @@ sudo update-desktop-database
 
 sudo mkdir -p /usr/local/share/man/man1
 sudo mkdir -p /usr/local/share/man/man5
-scdoc < extra/man/alacritty.1.scd | gzip -c | sudo tee /usr/local/share/man/man1/alacritty.1.gz > /dev/null
-scdoc < extra/man/alacritty-msg.1.scd | gzip -c | sudo tee /usr/local/share/man/man1/alacritty-msg.1.gz > /dev/null
-scdoc < extra/man/alacritty.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty.5.gz > /dev/null
-scdoc < extra/man/alacritty-bindings.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty-bindings.5.gz > /dev/null
+scdoc <extra/man/alacritty.1.scd | gzip -c | sudo tee /usr/local/share/man/man1/alacritty.1.gz >/dev/null
+scdoc <extra/man/alacritty-msg.1.scd | gzip -c | sudo tee /usr/local/share/man/man1/alacritty-msg.1.gz >/dev/null
+scdoc <extra/man/alacritty.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty.5.gz >/dev/null
+scdoc <extra/man/alacritty-bindings.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty-bindings.5.gz >/dev/null
 
 cd "$(dirs -l -0)" && dirs -c
 
 echo "Installo i temi di Alacritty..."
-if [[ -d ~/.config/alacritty/themes ]];
-then
+if [[ -d ~/.config/alacritty/themes ]]; then
     rm -rf ~/.config/alacritty/themes
 fi
 mkdir -p ~/.config/alacritty/themes
 git clone https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes
 
 echo "Configuro Alacritty..."
-if [[ -f ~/.config/alacritty/alacritty.toml ]];
-then
+if [[ -f ~/.config/alacritty/alacritty.toml ]]; then
     mv ~/.config/alacritty/alacritty.toml ~/.config/alacritty/alacritty.toml.bak
 fi
 
-cat <<EOF > ~/.config/alacritty/alacritty.toml
+cat <<EOF >~/.config/alacritty/alacritty.toml
 import = ["~/.config/alacritty/themes/themes/argonaut.toml"]
 
 [font.bold]
@@ -135,7 +128,7 @@ echo "Configuro fish..."
 fish -c 'mkdir -p $fish_complete_path[1]; cp extra/completions/alacritty.fish $fish_complete_path[1]/alacritty.fish'
 mkdir -p ~/.config/fish
 
-cat <<EOF >> ~/.config/fish/config.fish
+cat <<EOF >>~/.config/fish/config.fish
 
 # Changing "ls" to "eza"
 alias ls='eza -al --color=always --group-directories-first --icons'
@@ -145,10 +138,9 @@ alias lt='eza -aT --color=always --group-directories-first --icons'
 alias l.='eza -a | grep -E "^\."'
 EOF
 
-echo "Installo gli shell color scripts..."
+echo "Installo gli shell color script..."
 pushd ~/myprograms
-if [[ -d shell-color-scripts ]];
-then
+if [[ -d shell-color-scripts ]]; then
     rm -rf shell-color-scripts
 fi
 git clone https://gitlab.com/dwt1/shell-color-scripts.git
@@ -161,7 +153,7 @@ sudo cp completions/colorscript.fish /usr/share/fish/vendor_completions.d
 cd "$(dirs -l -0)" && dirs -c
 
 mkdir -p ~/.config/fish/functions
-cat <<EOF > ~/.config/fish/functions/fish_greeting.fish
+cat <<EOF >~/.config/fish/functions/fish_greeting.fish
 function fish_greeting
     if set -q fish_private_mode
         colorscript random
@@ -175,13 +167,13 @@ EOF
 echo "Installo Starship..."
 curl -sS https://starship.rs/install.sh | sh -s -- -y
 
-cat <<EOF >> ~/.config/fish/config.fish
+cat <<EOF >>~/.config/fish/config.fish
 
 # Starship prompt
 starship init fish | source
 EOF
 
-cat <<'EOF' > ~/.config/starship.toml
+cat <<'EOF' >~/.config/starship.toml
 ## FIRST LINE/ROW: Info & Status
 # First param ─┌
 [username]
