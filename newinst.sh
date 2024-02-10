@@ -132,6 +132,9 @@ sudo cp completions/colorscript.fish /usr/share/fish/vendor_completions.d # opti
 
 go_to_basedir
 
+# Aggiungo questo file che definisce alcuni colori usati da uno dei color script
+cat ./.Xresources >> ~/.Xresources
+
 mkdir -p ~/.config/fish/functions
 backup_if_exists ~/.config/fish/functions/fish_greeting.fish
 cp ./fish_greeting.fish ~/.config/fish/functions/fish_greeting.fish
