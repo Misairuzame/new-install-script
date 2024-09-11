@@ -49,7 +49,7 @@ for font in *; do
 done
 
 mkdir -p ~/.local/share/fonts
-mv "*.ttf" "*.otf" ~/.local/share/fonts
+mv *.ttf *.otf ~/.local/share/fonts
 
 popd
 
@@ -108,6 +108,9 @@ scdoc <extra/man/alacritty-msg.1.scd | gzip -c | sudo tee /usr/local/share/man/m
 scdoc <extra/man/alacritty.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty.5.gz >/dev/null
 scdoc <extra/man/alacritty-bindings.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty-bindings.5.gz >/dev/null
 
+echo "Configuro fish per Alacritty..."
+fish -c 'mkdir -p $fish_complete_path[1]; cp extra/completions/alacritty.fish $fish_complete_path[1]/alacritty.fish'
+
 go_to_basedir
 
 echo "Installo i temi di Alacritty..."
@@ -118,9 +121,6 @@ git clone https://github.com/alacritty/alacritty-theme ~/.config/alacritty/theme
 echo "Configuro Alacritty..."
 backup_if_exists ~/.config/alacritty/alacritty.toml
 cp ./alacritty.toml ~/.config/alacritty/alacritty.toml
-
-echo "Configuro fish..."
-fish -c 'mkdir -p $fish_complete_path[1]; cp extra/completions/alacritty.fish $fish_complete_path[1]/alacritty.fish'
 
 echo "Installo gli shell color script..."
 pushd ~/myprograms
