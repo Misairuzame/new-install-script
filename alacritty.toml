@@ -1,6 +1,5 @@
 [general]
 import = ["~/.config/alacritty/themes/themes/argonaut.toml"]
-#import = ["~/.config/alacritty/themes/themes/github_light.toml"]
 
 [font.bold]
 family = "FiraCode Nerd Font"

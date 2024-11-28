@@ -49,7 +49,7 @@ for font in *; do
 done
 
 mkdir -p ~/.local/share/fonts
-mv *.ttf *.otf ~/.local/share/fonts
+mv ./*.ttf ./*.otf ~/.local/share/fonts
 
 popd
 
@@ -125,21 +125,26 @@ cp ./alacritty.toml ~/.config/alacritty/alacritty.toml
 echo "Installo gli shell color script..."
 pushd ~/myprograms
 rm_folder_if_exists shell-color-scripts
-git clone https://gitlab.com/dwt1/shell-color-scripts.git
+git clone https://github.com/Misairuzame/shell-color-scripts.git
 pushd shell-color-scripts
 sudo make install
 sudo cp completions/colorscript.fish /usr/share/fish/vendor_completions.d # optional for fish shell completion
 
 go_to_basedir
 
-# Aggiungo questo file che definisce alcuni colori usati da uno dei color script
-cat ./.Xresources >> ~/.Xresources
-
+echo "Aggiungo la funzione fish_greeting..."
 mkdir -p ~/.config/fish/functions
 backup_if_exists ~/.config/fish/functions/fish_greeting.fish
 cp ./fish_greeting.fish ~/.config/fish/functions/fish_greeting.fish
-cp ./light-dark.txt ~/.config/alacritty/light-dark.txt
-cp ./alacritty-dark.fish ./alacritty-light.fish ~/.config/fish/functions
+
+echo "Installo alacritty-theme-switch..."
+mkdir -p ~/myprograms
+pushd ~/myprograms
+git clone https://github.com/Misairuzame/alacritty-theme-switch.git
+push alacritty-theme-switch
+sudo make install
+
+go_to_basedir
 
 echo "Installo Starship..."
 curl -sS https://starship.rs/install.sh | sh -s -- -y

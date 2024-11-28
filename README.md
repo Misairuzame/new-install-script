@@ -10,8 +10,9 @@ Lo script installa e configura:
 - [eza](https://github.com/eza-community/eza), sostitutivo di ls
 - [Alacritty](https://github.com/alacritty/alacritty) (e dipendenze, fra cui [rustup.rs](https://rustup.rs/))
 - Dei [temi per Alacritty](https://github.com/alacritty/alacritty-theme)
+- [alacritty-theme-switch](https://github.com/Misairuzame/alacritty-theme-switch)
 - La shell [fish](https://github.com/fish-shell/fish-shell)
-- Gli [shell color script](https://gitlab.com/dwt1/shell-color-scripts)
+- Gli [shell color script](https://github.com/Misairuzame/shell-color-scripts)
 - Il prompt [starship](https://starship.rs/)
 
 ## Uso
