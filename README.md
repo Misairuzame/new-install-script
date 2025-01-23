@@ -8,9 +8,7 @@ Lo script installa e configura:
 - Diversi strumenti di uso generale (python3, htop, btop, tmux, curl...)
 - Alcuni font e [Nerd Font](https://github.com/ryanoasis/nerd-fonts)
 - [eza](https://github.com/eza-community/eza), sostitutivo di ls
-- [Alacritty](https://github.com/alacritty/alacritty) (e dipendenze, fra cui [rustup.rs](https://rustup.rs/))
-- Dei [temi per Alacritty](https://github.com/alacritty/alacritty-theme)
-- [alacritty-theme-switch](https://github.com/Misairuzame/alacritty-theme-switch)
+- [Ghostty](https://github.com/ghostty-org/ghostty) dalla repository [ghostty-ubuntu](https://github.com/mkasberg/ghostty-ubuntu)
 - La shell [fish](https://github.com/fish-shell/fish-shell)
 - Gli [shell color script](https://github.com/Misairuzame/shell-color-scripts)
 - Il prompt [starship](https://starship.rs/)
@@ -19,6 +17,6 @@ Lo script installa e configura:
 
 Clona la repository ed esegui lo script [`newinst.sh`](newinst.sh).
 
-## License
+## Licenza
 
 Questo progetto è distribuito sotto la licenza MIT - vedi il file [LICENSE.md](LICENSE.md) per ulteriori dettagli.
