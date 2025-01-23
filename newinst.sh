@@ -27,22 +27,28 @@ echo "Aggiorno il sistema..."
 sudo apt update && sudo apt upgrade -y
 
 echo "Installo alcuni pacchetti..."
-sudo apt install -y python-is-python3 python3-pip python3-venv htop btop tmux fish gpg neofetch wget curl
+sudo apt install -y git python-is-python3 python3-pip python3-venv htop btop fish wget curl
+# fastfetch non è ancora nelle repo ufficiali
 
-echo "Installo alcuni font..."
+echo "Installo alcuni Nerd Font..."
 mkdir tmp_font
 pushd tmp_font
 
-font_baseurl="https://github.com/ryanoasis/nerd-fonts/releases/latest/download"
+nerd_font_baseurl="https://github.com/ryanoasis/nerd-fonts/releases/latest/download"
 
-wget -q --show-progress "$font_baseurl/CommitMono.tar.xz"
-wget -q --show-progress "$font_baseurl/FiraCode.tar.xz"
-wget -q --show-progress "$font_baseurl/Hack.tar.xz"
-wget -q --show-progress "$font_baseurl/Hasklig.tar.xz"
-wget -q --show-progress "$font_baseurl/JetBrainsMono.tar.xz"
-wget -q --show-progress "$font_baseurl/Mononoki.tar.xz"
-wget -q --show-progress "$font_baseurl/RobotoMono.tar.xz"
-wget -q --show-progress "$font_baseurl/UbuntuMono.tar.xz"
+font_names=("CommitMono" "FiraCode" "Hack" "JetBrainsMono" "Mononoki" "RobotoMono" "UbuntuMono")
+
+for font_name in "${font_names[@]}"
+do
+    if [[ $(fc-list : family | grep -c "$font_name Nerd Font") == 0 ]]; then
+        wget -q --show-progress "$nerd_font_baseurl/$font_name.tar.xz"
+    fi
+done
+
+# Hasklug is downloaded as Hasklig
+if [[ $(fc-list : family | grep -c "Hasklug Nerd Font") == 0 ]]; then
+    wget -q --show-progress "$nerd_font_baseurl/Hasklig.tar.xz"
+fi
 
 for font in *; do
     tar xJf "$font"
@@ -68,59 +74,24 @@ sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.lis
 sudo apt update
 sudo apt install -y eza
 
-echo "Installo rustup.rs per Alacritty..."
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source "$HOME/.cargo/env"
-rustup override set stable
-rustup update stable
-
-echo "Installo Alacritty..."
-mkdir -p ~/myprograms
-pushd ~/myprograms
-rm_folder_if_exists alacritty
-git clone https://github.com/alacritty/alacritty.git
-pushd alacritty
-
-sudo apt install -y cmake pkg-config libfreetype6-dev libfontconfig1-dev libxcb-xfixes0-dev libxkbcommon-dev python3 gzip scdoc
-
-if [[ $XDG_SESSION_TYPE == "x11" ]]; then
-    cargo build --release --no-default-features --features=x11
-elif [[ $XDG_SESSION_TYPE == "wayland" ]]; then
-    cargo build --release --no-default-features --features=wayland
-else
-    echo "Display manager non riconosciuto (non è X11 o Wayland), installo tutte le feature"
-    cargo build --release
-fi
-
-if [[ ! $(infocmp alacritty) ]]; then
-    sudo tic -xe alacritty,alacritty-direct extra/alacritty.info
-fi
-
-sudo cp target/release/alacritty /usr/local/bin # or anywhere else in $PATH
-sudo cp extra/logo/alacritty-term.svg /usr/share/pixmaps/Alacritty.svg
-sudo desktop-file-install extra/linux/Alacritty.desktop
-sudo update-desktop-database
-
-sudo mkdir -p /usr/local/share/man/man1
-sudo mkdir -p /usr/local/share/man/man5
-scdoc <extra/man/alacritty.1.scd | gzip -c | sudo tee /usr/local/share/man/man1/alacritty.1.gz >/dev/null
-scdoc <extra/man/alacritty-msg.1.scd | gzip -c | sudo tee /usr/local/share/man/man1/alacritty-msg.1.gz >/dev/null
-scdoc <extra/man/alacritty.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty.5.gz >/dev/null
-scdoc <extra/man/alacritty-bindings.5.scd | gzip -c | sudo tee /usr/local/share/man/man5/alacritty-bindings.5.gz >/dev/null
-
-echo "Configuro fish per Alacritty..."
-fish -c 'mkdir -p $fish_complete_path[1]; cp extra/completions/alacritty.fish $fish_complete_path[1]/alacritty.fish'
-
 go_to_basedir
 
-echo "Installo i temi di Alacritty..."
-rm_folder_if_exists ~/.config/alacritty/themes
-mkdir -p ~/.config/alacritty/themes
-git clone https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes
+echo "Installo Ghostty..."
+source /etc/os-release
+ARCH=$(dpkg --print-architecture)
+GHOSTTY_DEB_URL=$(
+   curl -s https://api.github.com/repos/mkasberg/ghostty-ubuntu/releases/latest | \
+   grep -oP "https://github.com/mkasberg/ghostty-ubuntu/releases/download/[^\s/]+/ghostty_[^\s/_]+_${ARCH}_${VERSION_ID}.deb"
+)
+GHOSTTY_DEB_FILE=$(basename "$GHOSTTY_DEB_URL")
+curl -LO "$GHOSTTY_DEB_URL"
+sudo dpkg -i "$GHOSTTY_DEB_FILE"
+rm "$GHOSTTY_DEB_FILE"
 
-echo "Configuro Alacritty..."
-backup_if_exists ~/.config/alacritty/alacritty.toml
-cp ./alacritty.toml ~/.config/alacritty/alacritty.toml
+mkdir -p "$HOME/.config/ghostty"
+cp ghostty-config "$HOME/.config/ghostty/config"
+
+go_to_basedir
 
 echo "Installo gli shell color script..."
 pushd ~/myprograms
@@ -137,13 +108,6 @@ mkdir -p ~/.config/fish/functions
 backup_if_exists ~/.config/fish/functions/fish_greeting.fish
 cp ./fish_greeting.fish ~/.config/fish/functions/fish_greeting.fish
 
-echo "Installo alacritty-theme-switch..."
-mkdir -p ~/myprograms
-pushd ~/myprograms
-git clone https://github.com/Misairuzame/alacritty-theme-switch.git
-push alacritty-theme-switch
-sudo make install
-
 go_to_basedir
 
 echo "Installo Starship..."
@@ -156,5 +120,4 @@ backup_if_exists ~/.config/fish/config.fish
 cp ./config.fish ~/.config/fish/config.fish
 
 echo "Finito! Puoi provare il nuovo terminale!"
-alacritty -e fish
-echo -e "Se il terminale è molto grande, aggiungi:\nexport WINIT_X11_SCALE_FACTOR=1\nal file /etc/profile"
+ghostty -e fish
