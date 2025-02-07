@@ -38,8 +38,7 @@ nerd_font_baseurl="https://github.com/ryanoasis/nerd-fonts/releases/latest/downl
 
 font_names=("CommitMono" "FiraCode" "Hack" "JetBrainsMono" "Mononoki" "RobotoMono" "UbuntuMono")
 
-for font_name in "${font_names[@]}"
-do
+for font_name in "${font_names[@]}"; do
     if [[ $(fc-list : family | grep -c "$font_name Nerd Font") == 0 ]]; then
         wget -q --show-progress "$nerd_font_baseurl/$font_name.tar.xz"
     fi
@@ -50,12 +49,19 @@ if [[ $(fc-list : family | grep -c "Hasklug Nerd Font") == 0 ]]; then
     wget -q --show-progress "$nerd_font_baseurl/Hasklig.tar.xz"
 fi
 
-for font in *; do
-    tar xJf "$font"
-done
+if [[ $(find ./*.tar.xz 2>/dev/null | wc -l) -gt 0 ]]; then
+    for font in *; do
+        tar xJf "$font"
+    done
+fi
 
 mkdir -p ~/.local/share/fonts
-mv ./*.ttf ./*.otf ~/.local/share/fonts
+if [[ $(find ./*.ttf 2>/dev/null | wc -l) -gt 0 ]]; then
+    mv ./*.ttf ~/.local/share/fonts
+fi
+if [[ $(find ./*.otf 2>/dev/null | wc -l) -gt 0 ]]; then
+    mv ./*.otf ~/.local/share/fonts
+fi
 
 popd
 
@@ -80,8 +86,8 @@ echo "Installo Ghostty..."
 source /etc/os-release
 ARCH=$(dpkg --print-architecture)
 GHOSTTY_DEB_URL=$(
-   curl -s https://api.github.com/repos/mkasberg/ghostty-ubuntu/releases/latest | \
-   grep -oP "https://github.com/mkasberg/ghostty-ubuntu/releases/download/[^\s/]+/ghostty_[^\s/_]+_${ARCH}_${VERSION_ID}.deb"
+    curl -s https://api.github.com/repos/mkasberg/ghostty-ubuntu/releases/latest |
+        grep -oP "https://github.com/mkasberg/ghostty-ubuntu/releases/download/[^\s/]+/ghostty_[^\s/_]+_${ARCH}_${VERSION_ID}.deb"
 )
 GHOSTTY_DEB_FILE=$(basename "$GHOSTTY_DEB_URL")
 curl -LO "$GHOSTTY_DEB_URL"
