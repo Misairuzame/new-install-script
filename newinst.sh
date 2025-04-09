@@ -40,7 +40,7 @@ elif [[ ! "$(sudo -l)" ]]; then
 fi
 
 # Controllo se sono in un ambiente desktop o headless
-if [[ -z "${XDG_SESSION_TYPE+x}" && -z "${DESKTOP_SESSION+x}" ]]; then
+if [[ -z "${XDG_SESSION_TYPE+x}" || "${XDG_SESSION_TYPE}" == "tty" || -z "${DESKTOP_SESSION+x}" ]]; then
     desktop_environment=""
 else
     desktop_environment="1"
@@ -60,7 +60,7 @@ $as_root apt install -y git python-is-python3 python3-pip python3-venv htop btop
 
 if [[ -n "$desktop_environment" ]]; then
     echo "${mysep}Installo alcuni Nerd Font..."
-    mkdir tmp_font
+    mkdir -p tmp_font
     pushd tmp_font
 
     nerd_font_baseurl="https://github.com/ryanoasis/nerd-fonts/releases/latest/download"
@@ -136,7 +136,7 @@ else
 fi
 
 echo "${mysep}Installo gli shell color script..."
-mkdir ~/myprograms
+mkdir -p ~/myprograms
 pushd ~/myprograms
 rm_folder_if_exists shell-color-scripts
 git clone https://github.com/Misairuzame/shell-color-scripts.git
