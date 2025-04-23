@@ -16,7 +16,7 @@ alias ip='ip --color'
 alias less='less -R'
 
 # Per risolvere problemi con SSH e Bash
-if [ $TERM = "alacritty" ]; alias ssh='TERM=xterm-256color command ssh'; alias bash='TERM=xterm-256color command bash'; end
+if [ $TERM = "alacritty" -o $TERM = "xterm-ghostty" ]; alias ssh='TERM=xterm-256color command ssh'; alias bash='TERM=xterm-256color command bash'; end
 
 # Starship prompt
 starship init fish | source
